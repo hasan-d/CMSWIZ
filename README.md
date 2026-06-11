@@ -23,7 +23,7 @@ PHP Content Management System - jednostavan CMS napravljen u PHP-u sa MySQL bazo
 3. Otvori `http://localhost/CMSWIZ` u browseru
    
 ## Admin Panel
-http://localhost/CMSWIZ/admin/
+http://localhost/CMSWIZ/admin/login.php
 email: admin@cms.com 
 password: admin123
 
