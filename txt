@@ -1,0 +1,134 @@
+cms
+user menagment
+media files
+funkcije za bazu
+meni
+upload logo naziv stranice
+
+
+
+bootstrap
+
+
+
+Faza 1: Osnova
+Korak 1 – config.php
+- DB konekcija (host, user, pass, db)
+- define('BASE_PATH', __DIR__);
+- Učitavanje settings tabele u $site_settings niz (site_name, site_logo)
+- session_start()
+Korak 2 – functions/db.php
+- db_insert($table, $data) – INSERT sa prepared statement
+- db_selectOne($table, $where) – jedan red
+- db_selectAll($table, $where = [], $order = '') – svi redovi
+- db_update($table, $data, $where) – UPDATE
+- db_delete($table, $where) – DELETE
+Korak 3 – Baza (SQL dump)
+Kreirati cms.sql sa tabelama:
+- users (id, username, email, password, role, created_at)
+- media (id, filename, original_name, path, type, size, uploaded_by, created_at)
+- navigation (id, title, url, parent_id, order_priority, target)
+- settings (id, key, value)
+- INSERT prvog admin korisnika (username: admin, password: admin123)
+- INSERT default settings (site_name = "My CMS", site_logo = "")
+Faza 2: Autentifikacija
+Korak 4 – functions/auth.php
+- login($email, $password) – provjera + sesija
+- is_logged_in() – provjera sesije
+- has_role($role) – provjera role
+- logout() – destroy sesije
+- redirect($url) – header Location
+Korak 5 – admin/login.php
+- Login forma (email + password)
+- Ako već logovan → redirect na dashboard
+- Error poruka na pogrešan login
+Korak 6 – admin/logout.php
+- logout() + redirect na login
+Faza 3: Admin okvir
+Korak 7 – templates/admin_header.php
+- Bootstrap CDN
+- <title> iz $site_settings['site_name']
+- Sidebar meni (Dashboard, Users, Media, Menu, Settings)
+- Provjera is_logged_in() – ako nije, redirect na login
+Korak 8 – templates/admin_footer.php
+- Zatvaranje Bootstrap strukture
+- Bootstrap JS CDN
+Korak 9 – admin/dashboard.php
+- Broj korisnika
+- Broj medija
+- Broj meni stavki
+- Jednostavne kartice sa brojevima
+Faza 4: User Management
+Korak 10 – admin/users.php (Lista)
+- SELECT * FROM users
+- Tabela sa Bootstrap table klasom
+- Kolone: ID, Username, Email, Role, Created, Akcije (Edit/Delete)
+- Samo admin vidi ovu stranicu (has_role('admin'))
+Korak 11 – Dodavanje usera
+- Modal ili poseban dio forme na users.php
+- Polja: username, email, password, role (select)
+- db_insert('users', ...) sa password_hash()
+- Flash poruka o uspjehu/neuspjehu
+Korak 12 – Edit usera
+- Klik na Edit → forma sa trenutnim podacima
+- Mijenjaš username, email, role, password (opciono)
+- db_update('users', ...)
+Korak 13 – Delete usera
+- Potvrda prije brisanja (JS confirm ili modal)
+- db_delete('users', ['id' => $id])
+- Ne možeš obrisati samog sebe
+Faza 5: Media Library
+Korak 14 – functions/media.php
+- upload_media($file) – validacija tipa/veličine, move_uploaded_file, insert u bazu
+- delete_media($id) – briše fajl sa diska + iz baze
+- get_media($id) – jedan fajl
+- get_all_media() – svi fajlovi
+Korak 15 – admin/media.php (Media grid)
+- Grid prikaz uploaded slika (Bootstrap row > col + cards)
+- Upload forma na vrhu (drag & drop ili input file)
+- Delete dugme na svakoj slici (sa potvrdom)
+Faza 6: Menu Builder
+Korak 16 – functions/menu.php
+- get_menu_items() – SELECT svi iz navigation poredani po order_priority
+- build_menu_tree($items, $parent_id = null) – rekurzivno slaganje niza u stablo
+- render_menu($tree) – generiše <ul><li> HTML
+Korak 17 – admin/menu.php
+- Lista trenutnih stavki (sa indentation za child)
+- Forma za dodavanje: title, url, parent (select sa root opcijom), target
+- Dugmad za pomjeranje gore/dole (update order_priority)
+- Delete dugme
+Faza 7: Settings
+Korak 18 – admin/settings.php
+- Forma: input za site_name
+- File input za logo (upload u uploads/logo/)
+- Save dugme → db_update('settings', ...) ili db_insert ako key ne postoji
+- Preview trenutnog loga
+Korak 19 – Upload loga
+- Maksimalna veličina: 2MB
+- Dozvoljeni formati: jpg, png, webp
+- Automatski resize ili ne (po želji)
+- Brisanje starog loga pri uploadu novog
+Faza 8: Javni dio (Frontend)
+Korak 20 – templates/header.php
+- <title> iz $site_settings['site_name']
+- Logo slika iz $site_settings['site_logo']
+- Dinamički meni preko render_menu()
+- Bootstrap CDN
+Korak 21 – templates/footer.php
+- Copyright sa $site_settings['site_name']
+- Bootstrap JS
+Korak 22 – index.php
+- Učitava header.php
+- Prikazuje dobrodošlicu sa imenom sajta
+- Učitava footer.php
+Faza 9: Dorade
+Korak 23 – Flash poruke
+- functions/helpers.php:
+  - set_flash($key, $message) – čuva u $_SESSION['flash'][$key]
+  - get_flash($key) – dohvati i izbriši iz sesije
+Korak 24 – Validacija
+- sanitize($input) – trim + strip_tags
+- validate_email($email) – filter_var
+- Provjera unique emaila pri registraciji
+Korak 25 – .htaccess
+- Ako treba pretty URL-ovi (opciono)
